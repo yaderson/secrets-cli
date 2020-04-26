@@ -2,32 +2,27 @@ const { Command } = require('@oclif/command')
 const { CLIError } = require('@oclif/errors')
 const { cli } = require('cli-ux')
 const { secretServices } = require('@secrets/services')
-const { AUTHENTICATED, authenticate, isAuthenticated } = require('@secrets/auth')
 
 class SecretsUpdateCommand extends Command {
   async run () {
     try {
       const { args } = this.parse(SecretsUpdateCommand)
 
-      let password = AUTHENTICATED
+      const { username, name } = args
 
-      if (!await isAuthenticated(args.username)) {
-        password = await cli.prompt('Enter your Password', { type: 'hide' })
+      await this.config.runHook('authenticate',{ username })
 
-        const isAuth = await authenticate(args.username, password)
-
-        if (!isAuth) { throw new CLIError('Invalid User or Password') }
-      }
       const value = await cli.prompt('Enter your secret', { type: 'mask' })
-      const mySecretUpadted = await secretServices.updateSecret(args.username, args.name, value, password)
+      
+      await secretServices.updateSecret(username, name, value)
 
-      if (!mySecretUpadted[0]) { throw new CLIError(`secret ${args.name} not found`) }
-
-      this.log(`Secret ${args.name} updated successfully`)
+      this.log(`Secret ${name} updated successfully`)
     } catch (err) {
-      throw new CLIError(`Cannot Update secret ${err}`)
-    } finally {
-      this.exit(0)
+      if (err instanceof CLIError) {
+        throw err
+      } else {
+        throw new CLIError('Cannot update secrets')
+      }
     }
   }
 }

@@ -5,27 +5,18 @@ const { Command, flags } = require('@oclif/command')
 const { CLIError } = require('@oclif/errors')
 const { cli } = require('cli-ux')
 const { secretServices } = require('@secrets/services')
-const { AUTHENTICATED, authenticate, isAuthenticated } = require('@secrets/auth')
 
 class SecretsGetCommand extends Command {
   async run () {
     try {
-      const { args } = this.parse(SecretsGetCommand)
-      const {flags} = this.parse(SecretsGetCommand)
-
-      let password = AUTHENTICATED
-
-      if (!await isAuthenticated(args.username)) {
-        password = await cli.prompt('Enter your Password', { type: 'hide' })
-
-        const isAuth = await authenticate(args.username, password)
-
-        if (!isAuth) { throw new CLIError('Invalid User or Password') }
-      }
-
-      const mySecret = await secretServices.getSecret(args.username, args.name, password)
+      const { args, flags } = this.parse(SecretsGetCommand)
       
-      if (!mySecret) { throw new CLIError(`secret ${args.name} not found`) }
+
+      const { username, name } = args
+
+      await this.config.runHook('authenticate',{ username })
+      
+      const mySecret = await secretServices.getSecret(username, name)
       
       if(flags.copy){
         cli.action.start('Copying to clipboard')

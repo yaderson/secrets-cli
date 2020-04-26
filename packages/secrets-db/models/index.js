@@ -32,7 +32,6 @@ Object.keys(db).forEach(modelName => {
   }
 })
 
-db.redisClient = new Redis(6379, '23.98.155.251')
 db.sequelize = sequelize
 db.Sequelize = Sequelize
 

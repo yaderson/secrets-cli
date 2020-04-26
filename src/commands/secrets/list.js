@@ -4,23 +4,17 @@ const { Command } = require('@oclif/command')
 const { CLIError } = require('@oclif/errors')
 const { cli } = require('cli-ux')
 const { secretServices } = require('@secrets/services')
-const { AUTHENTICATED, authenticate, isAuthenticated } = require('@secrets/auth')
+
 class SecretsListCommand extends Command {
   async run () {
     try {
       const { args } = this.parse(SecretsListCommand)
 
-      let password = AUTHENTICATED
+      const { username } = args
 
-      if (!await isAuthenticated(args.username)) {
-        password = await cli.prompt('Enter your Password', { type: 'hide' })
-
-        const isAuth = await authenticate(args.username, password)
-        
-        if (!isAuth) { throw new CLIError('Invalid User Or Password') }
-      }
-
-      const mySecrets = await secretServices.listSecrets(args.username)
+      await this.config.runHook('authenticate',{ username })
+      
+      const mySecrets = await secretServices.listSecrets(username)
 
       const columns = {
         name: {
@@ -30,6 +24,7 @@ class SecretsListCommand extends Command {
           header: 'CREATED AT'
         }
       }
+      
       cli.table(mySecrets.rows, columns)
       this.log(`\t Total: ${mySecrets.count}`)
     } catch (err) {

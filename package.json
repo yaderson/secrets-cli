@@ -48,7 +48,10 @@
     "bin": "secrets-cli",
     "plugins": [
       "@oclif/plugin-help"
-    ]
+    ],
+    "hooks":{
+      "authenticate": "./src/hooks/auth/"
+    }
   },
   "repository": "2020/secrets-cli",
   "scripts": {

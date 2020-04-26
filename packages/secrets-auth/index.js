@@ -1,19 +1,21 @@
 'use strict'
 
 const db = require('@secrets/db')
-const { comparePassword, generateKey } = require('@secrets/crypto')
-const AUTHENTICATED = Symbol('AUTHENTICATED')
+const { generateKey, comparePassword } = require('@secrets/crypto')
+
 
 async function getAuthenticateUser (username, pass) {
+  
   const user = await db.users.findOne({ where: { username } })
 
   if (!user) { return false }
+  
+  const hashed = user.password
 
-  const hash = user.password
-
-  if (await comparePassword(pass, hash)) {
-    await db.redisClient.set(username, generateKey(pass), 'EX', 120)
-    
+  if(await comparePassword(pass, hashed)){
+    const redisClient = db.createRedisClient()
+    await redisClient.set(username, generateKey(pass), 'EX', 3 * 60)
+    redisClient.disconnect()
     return user
   }
 
@@ -30,17 +32,20 @@ async function authenticate (username, pass) {
   return false
 }
 
-function getSecretkey (username, password) {
-  if (password === AUTHENTICATED) { return db.redisClient.get(username) }
-  return generateKey(password)
+async function getSecretkey (username) {
+
+  const redisClient = db.createRedisClient()
+  const user = await redisClient.get(username)
+  redisClient.disconnect()
+  return user
+
 }
 
 async function isAuthenticated (username) {
-  return db.redisClient.get(username)
+  return await getSecretkey(username) != null
 }
 
 module.exports = {
-  AUTHENTICATED,
   authenticate,
   getSecretkey,
   isAuthenticated

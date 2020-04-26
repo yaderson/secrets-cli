@@ -2,34 +2,28 @@
 
 const { Command } = require('@oclif/command')
 const { CLIError } = require('@oclif/errors')
-const { cli } = require('cli-ux')
 const { secretServices } = require('@secrets/services')
-const { AUTHENTICATED, authenticate, isAuthenticated } = require('@secrets/auth')
 
 class SecretsDeleteCommand extends Command {
   async run () {
     try {
       const { args } = this.parse(SecretsDeleteCommand)
 
-      let password = AUTHENTICATED
+      const { username, name } = args
 
-      if (!await isAuthenticated(args.username)) {
-        password = await cli.prompt('Enter your Password', { type: 'hide' })
+      await this.config.runHook('authenticate',{ username })
 
-        const isAuth = await authenticate(args.username, password)
+      const myDeletedSecret = await secretServices.deleteSecret(username, name)
 
-        if (!isAuth) { throw new CLIError('Invalid User or Password') }
-      }
+      if (!myDeletedSecret) { throw new CLIError(`secret ${name} not found`) }
 
-      const myDeletedSecret = await secretServices.deleteSecret(args.username, args.name)
-
-      if (!myDeletedSecret) { throw new CLIError(`secret ${args.name} not found`) }
-
-      this.log(`Secret ${args.name} deleted successfully`)
+      this.log(`Secret ${name} deleted successfully`)
     } catch (err) {
-      throw new CLIError(`Cannot delete secret ${err}`)
-    } finally {
-      this.exit(0)
+      if (err instanceof CLIError) {
+        throw err
+      } else {
+        throw new CLIError('Cannot delete secrets')
+      }
     }
   }
 }
