@@ -10,14 +10,14 @@ class SecretsCreateCommand extends Command {
     try {
       const { args } = this.parse(SecretsCreateCommand)
       const { username, name } = args
-      
-      await this.config.runHook('authenticate',{ username })
+
+      await this.config.runHook('authenticate', { username })
 
       const value = await cli.prompt('Enter your secret', { type: 'mask' })
-      
+
       const myNewSecret = await secretServices.createSecret(username, name, value)
-      
-      this.log(`Secret ${ myNewSecret.name } Created successfully`)
+
+      this.log(`Secret ${myNewSecret.name} Created successfully`)
     } catch (err) {
       if (err instanceof CLIError) {
         throw err

@@ -11,7 +11,7 @@ class SecretsDeleteCommand extends Command {
 
       const { username, name } = args
 
-      await this.config.runHook('authenticate',{ username })
+      await this.config.runHook('authenticate', { username })
 
       const myDeletedSecret = await secretServices.deleteSecret(username, name)
 

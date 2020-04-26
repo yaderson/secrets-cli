@@ -10,10 +10,10 @@ class SecretsUpdateCommand extends Command {
 
       const { username, name } = args
 
-      await this.config.runHook('authenticate',{ username })
+      await this.config.runHook('authenticate', { username })
 
       const value = await cli.prompt('Enter your secret', { type: 'mask' })
-      
+
       await secretServices.updateSecret(username, name, value)
 
       this.log(`Secret ${name} updated successfully`)

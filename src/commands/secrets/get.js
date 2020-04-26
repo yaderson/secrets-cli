@@ -10,19 +10,18 @@ class SecretsGetCommand extends Command {
   async run () {
     try {
       const { args, flags } = this.parse(SecretsGetCommand)
-      
 
       const { username, name } = args
 
-      await this.config.runHook('authenticate',{ username })
-      
+      await this.config.runHook('authenticate', { username })
+
       const mySecret = await secretServices.getSecret(username, name)
-      
-      if(flags.copy){
+
+      if (flags.copy) {
         cli.action.start('Copying to clipboard')
         clipboardy.writeSync(mySecret.value)
         cli.action.stop('Copied to clipboard')
-      }else{
+      } else {
         this.log(mySecret.name + ': ' + mySecret.value)
       }
       this.exit()

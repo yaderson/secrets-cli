@@ -12,8 +12,8 @@ class SecretsListCommand extends Command {
 
       const { username } = args
 
-      await this.config.runHook('authenticate',{ username })
-      
+      await this.config.runHook('authenticate', { username })
+
       const mySecrets = await secretServices.listSecrets(username)
 
       const columns = {
@@ -24,7 +24,7 @@ class SecretsListCommand extends Command {
           header: 'CREATED AT'
         }
       }
-      
+
       cli.table(mySecrets.rows, columns)
       this.log(`\t Total: ${mySecrets.count}`)
     } catch (err) {
