@@ -49,7 +49,7 @@
     "plugins": [
       "@oclif/plugin-help"
     ],
-    "hooks":{
+    "hooks": {
       "authenticate": "./src/hooks/auth/"
     }
   },

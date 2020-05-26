@@ -7,7 +7,7 @@ const { userServices } = require('@secrets/services')
 
 class UsersCreateCommand extends Command {
   async run () {
-    try {
+    try { /** refact args */
       const { args } = this.parse(UsersCreateCommand)
       const password = await cli.prompt('Enter your Password', { type: 'hide' })
 
